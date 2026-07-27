@@ -8,12 +8,13 @@ branding:
 
 inputs:
   source:
-    description: Source image repository, e.g. "ghcr.io/its-me/workflow".
+    description: >
+      Source image repository, e.g. "ghcr.io/its-me/workflow" or
+      "1tsme/workflow". The registry to log in to is derived from the
+      first path segment: it's treated as a hostname (and logged in to)
+      when it contains a "." or ":" or is "localhost", otherwise the
+      image is assumed to be on Docker Hub.
     required: true
-  source-registry:
-    description: Registry hostname to log in to for the source image, e.g. "ghcr.io". Leave unset to log in to Docker Hub.
-    required: false
-    default: ""
   source-username:
     description: Username for logging in to the source registry.
     required: true
@@ -21,12 +22,11 @@ inputs:
     description: Password or token for logging in to the source registry.
     required: true
   destination:
-    description: Destination image repository, e.g. "1tsme/workflow" or "quay.io/itsme/workflow".
+    description: >
+      Destination image repository, e.g. "1tsme/workflow" or
+      "quay.io/itsme/workflow". The registry to log in to is derived the
+      same way as for "source".
     required: true
-  destination-registry:
-    description: Registry hostname to log in to for the destination image, e.g. "quay.io". Leave unset to log in to Docker Hub.
-    required: false
-    default: ""
   destination-username:
     description: Username for logging in to the destination registry.
     required: true
@@ -40,17 +40,43 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Resolve source registry
+      id: source-registry
+      shell: bash
+      env:
+        SOURCE: ${{ inputs.source }}
+      run: |
+        first="${SOURCE%%/*}"
+        if [[ "$first" == *.* || "$first" == *:* || "$first" == "localhost" ]]; then
+          echo "value=$first" >> "$GITHUB_OUTPUT"
+        else
+          echo "value=" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Resolve destination registry
+      id: destination-registry
+      shell: bash
+      env:
+        DESTINATION: ${{ inputs.destination }}
+      run: |
+        first="${DESTINATION%%/*}"
+        if [[ "$first" == *.* || "$first" == *:* || "$first" == "localhost" ]]; then
+          echo "value=$first" >> "$GITHUB_OUTPUT"
+        else
+          echo "value=" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Log in to source registry
       uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
       with:
-        registry: ${{ inputs.source-registry }}
+        registry: ${{ steps.source-registry.outputs.value }}
         username: ${{ inputs.source-username }}
         password: ${{ inputs.source-password }}
 
     - name: Log in to destination registry
       uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
       with:
-        registry: ${{ inputs.destination-registry }}
+        registry: ${{ steps.destination-registry.outputs.value }}
         username: ${{ inputs.destination-username }}
         password: ${{ inputs.destination-password }}
 

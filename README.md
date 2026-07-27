@@ -22,7 +22,6 @@ push-hub:
     - uses: its-me/action.image.mirror@v0
       with:
         source: ghcr.io/its-me/workflow
-        source-registry: ghcr.io
         source-username: ${{ github.actor }}
         source-password: ${{ secrets.GITHUB_TOKEN }}
         destination: ${{ secrets.HUB_USERNAME }}/workflow
@@ -31,19 +30,18 @@ push-hub:
         tags: ${{ needs.build.outputs.tags }}
 ```
 
-For a Quay.io destination, set `destination-registry: quay.io` and point
-`destination` at `quay.io/<namespace>/<repository>`.
+For a Quay.io destination, point `destination` at
+`quay.io/<namespace>/<repository>` — the registry to log in to is derived
+from `source`/`destination` automatically (see `Inputs` below).
 
 ## Inputs
 
 | Name                    | Description                                                                                 | Default  |
 | ------------------------ | ------------------------------------------------------------------------------------------------ | -------- |
-| `source`                 | Source image repository, e.g. `ghcr.io/its-me/workflow`.                                          | _(none)_ |
-| `source-registry`        | Registry hostname to log in to for the source image, e.g. `ghcr.io`. Leave unset for Docker Hub.  | `""`     |
+| `source`                 | Source image repository, e.g. `ghcr.io/its-me/workflow` or `1tsme/workflow`. The registry to log in to is derived from the first path segment: it's treated as a hostname (and logged in to) when it contains a `.` or `:` or is `localhost`, otherwise the image is assumed to be on Docker Hub. | _(none)_ |
 | `source-username`        | Username for logging in to the source registry.                                                   | _(none)_ |
 | `source-password`        | Password or token for logging in to the source registry.                                          | _(none)_ |
-| `destination`             | Destination image repository, e.g. `1tsme/workflow` or `quay.io/itsme/workflow`.                  | _(none)_ |
-| `destination-registry`   | Registry hostname to log in to for the destination image, e.g. `quay.io`. Leave unset for Docker Hub. | `""`     |
+| `destination`             | Destination image repository, e.g. `1tsme/workflow` or `quay.io/itsme/workflow`. The registry to log in to is derived the same way as for `source`. | _(none)_ |
 | `destination-username`   | Username for logging in to the destination registry.                                              | _(none)_ |
 | `destination-password`   | Password or token for logging in to the destination registry.                                     | _(none)_ |
 | `tags`                    | Whitespace-separated list of tag names to copy from source to destination.                        | _(none)_ |
