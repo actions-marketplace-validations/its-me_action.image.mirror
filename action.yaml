@@ -67,14 +67,14 @@ runs:
         fi
 
     - name: Log in to source registry
-      uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
       with:
         registry: ${{ steps.source-registry.outputs.value }}
         username: ${{ inputs.source-username }}
         password: ${{ inputs.source-password }}
 
     - name: Log in to destination registry
-      uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
       with:
         registry: ${{ steps.destination-registry.outputs.value }}
         username: ${{ inputs.destination-username }}
